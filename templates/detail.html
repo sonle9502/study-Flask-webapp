@@ -1,0 +1,25 @@
+<!-- templates/detail.html -->
+{% extends 'base.html' %}
+
+{% block title %}Detail - To-Do App{% endblock %}
+
+{% block content %}
+<h2>Task Details</h2>
+<!-- templates/detail.html -->
+<form action="{{ url_for('detail', id=task.id) }}" method="POST">
+    <p>
+        <label for="content">Task Content:</label>
+        <input type="text" name="content" id="content" value="{{ task.content }}">
+    </p>
+    <p>
+        <label for="description">Task Description:</label>
+        <textarea name="description" id="description" rows="4">{{ todo.description }}</textarea>
+    </p>
+    <p>
+        <label for="due_date">Due Date:</label>
+        <input type="datetime-local" name="due_date" id="due_date" value="{{ task.due_date.strftime('%Y-%m-%dT%H:%M') if task.due_date else '' }}">
+    </p>
+    <button type="submit">Update Task</button>
+</form>
+<a href="{{ url_for('delete', id=task.id) }}">Delete Task</a>
+{% endblock %}

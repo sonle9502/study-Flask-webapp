@@ -1,1 +1,1 @@
-web: gunicorn app:app
+web: gunicorn study-Flask-webapp.app:app

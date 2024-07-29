@@ -2,9 +2,10 @@ from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime
+from config import Config  
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///todo.db'
+app.config.from_object(Config) 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 

@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime
 from config import Config  
+from waitress import serve
 
 app = Flask(__name__)
 app.config.from_object(Config) 
@@ -65,8 +66,11 @@ def search():
     ).all()
     return render_template('index.html', todos=tasks)
 
-
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
-    app.run(debug=True)
+    # Waitress serverを使用してアプリケーションを起動
+    serve(app, host='0.0.0.0', port=8080)
+
+# 開発環境
+# if __name__ == "__main__":
+#     app.run(debug=True)
+    

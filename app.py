@@ -7,17 +7,21 @@ import os
 from config import DevelopmentConfig, TestingConfig, ProductionConfig
 
 app = Flask(__name__)
-app.config.from_object(Config) 
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+
+# 環境変数から現在の環境を取得
 env = os.environ.get('FLASK_ENV', 'development')
 
+# 環境に応じた設定を適用
 if env == 'development':
     app.config.from_object(DevelopmentConfig)
 elif env == 'testing':
     app.config.from_object(TestingConfig)
 else:
     app.config.from_object(ProductionConfig)
+
+# データベースの初期化
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 class Todo(db.Model):
     id = db.Column(db.Integer, primary_key=True)

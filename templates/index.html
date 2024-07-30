@@ -11,8 +11,8 @@
 <ul>
     {% for todo in todos %}
         <li>
-            <p>{{ todo.content }} </p>
-            <p>Detail: {{ todo.description }} - {{ todo.due_date }} </p>
+            <p> Content : {{  todo.content }} </p>
+            <p>Detail : {{ todo.description }} - {{ todo.due_date }} </p>
             <a href="/delete/{{ todo.id }}">Delete</a>
             <a href="/detail/{{ todo.id }}">Update</a>
         </li>

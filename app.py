@@ -44,18 +44,15 @@ def delete(id):
 
 @app.route('/detail/<int:id>', methods=['GET', 'POST'])
 def detail(id):
-    task = Todo.query.get_or_404(id)
+    todo = Todo.query.get_or_404(id)
     if request.method == 'POST':
         # フォームからデータを取得し、タスクを更新する処理
-        task_content = request.form['content']
-        task.content = task_content
-        task_description = request.form['description']
-        task.description = task_description
-        task_due_date = request.form['due_date']
-        task.due_date = datetime.strptime(task_due_date, '%Y-%m-%dT%H:%M') if task_due_date else None
+        todo.content =  request.form['content']
+        todo.description = request.form['description']
+        todo.due_date = datetime.strptime(request.form['due_date'], '%Y-%m-%dT%H:%M') if request.form['due_date'] else None
         db.session.commit()
         return redirect(url_for('index'))
-    return render_template('detail.html', task=task)
+    return render_template('detail.html', todo=todo)
 
 @app.route('/search', methods=['GET'])
 def search():
@@ -80,5 +77,5 @@ def internal_error(error):
 
 # 開発環境
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
     

@@ -4,6 +4,10 @@ from flask_migrate import Migrate
 from datetime import datetime
 import os
 from config import DevelopmentConfig, TestingConfig, ProductionConfig
+from threading import Thread
+from sendmail import run_scheduler
+from models import db, Todo  # Import from models
+
 
 app = Flask(__name__)
 
@@ -19,19 +23,9 @@ else:
     app.config.from_object(ProductionConfig)
 
 # データベースの初期化
-db = SQLAlchemy(app)
+db.init_app(app)
 migrate = Migrate(app, db)
 
-class Todo(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.String(200), nullable=False)
-    completed = db.Column(db.Boolean, default=False)
-    description = db.Column(db.Text, nullable=True)
-    due_date = db.Column(db.DateTime, nullable=True)  # 期限を追加
-
-    def __repr__(self):
-        return f'<Task {self.id}>'
-    
 @app.route('/')
 def index():
     tasks = Todo.query.all()
@@ -106,5 +100,8 @@ def internal_error(error):
 
 # 開発環境
 if __name__ == "__main__":
-    app.run(debug=True)
-    
+    with app.app_context():
+        db.create_all()  # Ensure all tables are created
+        scheduler_thread = Thread(target=run_scheduler)
+        scheduler_thread.start()
+        app.run(debug=True)

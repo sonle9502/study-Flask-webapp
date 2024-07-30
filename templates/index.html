@@ -8,8 +8,15 @@
     <h1 class="display-4">Welcome to the To-Do App</h1>
     <p class="lead">Manage your tasks efficiently with our simple and intuitive interface.</p>
     <hr class="my-4">
-    <a class="btn btn-primary btn-lg" href="{{ url_for('add') }}" role="button">Add a New Task</a>
+    <form class="form-inline my-2 my-lg-0" action="{{ url_for('search') }}" method="GET">
+        
+        <input class="form-control mr-sm-2" type="search" placeholder="Search tasks..." name="query">
+        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+        <a class="btn btn-primary btn-lg ml-auto" href="{{ url_for('add') }}" role="button">Add a New Task</a>
+    </form>
+    
 </div>
+    
 
 <div class="list-group">
     {% for todo in todos %}

@@ -22,3 +22,8 @@ body {
 .your-scroll-container {
     overflow: hidden;
 }
+
+.navbar-collapse {
+    display: flex;
+    justify-content: right; /* 子要素を左寄せ */
+}

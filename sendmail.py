@@ -21,7 +21,7 @@ schedule.every(1).minutes.do(check_due_tasks)
 
 def send_email(subject, body, to):
     from_email = "soncuc182304@gmail.com"
-    password = "Future0308@#"
+    password = "Future1234@#"
     smtp_server = "smtp.example.com"
     smtp_port = 587
 

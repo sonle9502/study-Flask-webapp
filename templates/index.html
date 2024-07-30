@@ -4,18 +4,21 @@
 {% block title %}Home - To-Do App{% endblock %}
 
 {% block content %}
-<form action="/add" method="POST">
-    <input type="text" name="content" id="content" placeholder="Enter a new task">
-    <button type="submit">Add Task</button>
-</form>
-<ul>
+<div class="jumbotron">
+    <h1 class="display-4">Welcome to the To-Do App</h1>
+    <p class="lead">Manage your tasks efficiently with our simple and intuitive interface.</p>
+    <hr class="my-4">
+    <a class="btn btn-primary btn-lg" href="{{ url_for('add') }}" role="button">Add a New Task</a>
+</div>
+
+<div class="list-group">
     {% for todo in todos %}
-        <li>
-            <p>{{ todo.content }} </p>
-            <p>Detail: {{ todo.description }} - {{ todo.due_date }} </p>
-            <a href="/delete/{{ todo.id }}">Delete</a>
-            <a href="/detail/{{ todo.id }}">Update</a>
-        </li>
+    <div class="list-group-item">
+        <p>Content : {{  todo.content }} </p>
+        <p>Detail : {{ todo.description }} - {{ todo.due_date }} </p>
+        <a href="{{ url_for('delete', id=todo.id) }}" class="btn btn-danger btn-sm">Delete</a>
+        <a href="{{ url_for('detail', id=todo.id) }}" class="btn btn-secondary btn-sm">Update</a>
+    </div>
     {% endfor %}
-</ul>
+</div>
 {% endblock %}

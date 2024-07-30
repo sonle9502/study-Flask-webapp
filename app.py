@@ -27,10 +27,26 @@ def index():
 @app.route('/add', methods=['GET', 'POST'])
 def add():
     if request.method == 'POST':
-        task_content = request.form['content']
-        new_task = Todo(content=task_content)
+        # フォームからデータを取得
+        content = request.form['content']
+        description = request.form['description']
+        due_date = request.form['due_date']
+        # due_date_str を datetime オブジェクトに変換
+        try:
+            due_date = datetime.fromisoformat(due_date)
+        except ValueError:
+            # 変換に失敗した場合のエラーハンドリング
+            return "Invalid date format", 400
+        # Todoオブジェクトを作成
+        new_task = Todo(
+            content=content,
+            description=description,
+            due_date=due_date
+        )
+        # データベースに追加
         db.session.add(new_task)
         db.session.commit()
+        # インデックスページにリダイレクト
         return redirect(url_for('index'))
     else:
         return render_template('add.html')
@@ -44,18 +60,15 @@ def delete(id):
 
 @app.route('/detail/<int:id>', methods=['GET', 'POST'])
 def detail(id):
-    task = Todo.query.get_or_404(id)
+    todo = Todo.query.get_or_404(id)
     if request.method == 'POST':
         # フォームからデータを取得し、タスクを更新する処理
-        task_content = request.form['content']
-        task.content = task_content
-        task_description = request.form['description']
-        task.description = task_description
-        task_due_date = request.form['due_date']
-        task.due_date = datetime.strptime(task_due_date, '%Y-%m-%dT%H:%M') if task_due_date else None
+        todo.content =  request.form['content']
+        todo.description = request.form['description']
+        todo.due_date = datetime.strptime(request.form['due_date'], '%Y-%m-%dT%H:%M') if request.form['due_date'] else None
         db.session.commit()
         return redirect(url_for('index'))
-    return render_template('detail.html', task=task)
+    return render_template('detail.html', todo=todo)
 
 @app.route('/search', methods=['GET'])
 def search():
@@ -80,5 +93,5 @@ def internal_error(error):
 
 # 開発環境
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
     

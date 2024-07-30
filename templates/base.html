@@ -1,29 +1,39 @@
-<!-- templates/base.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}To-Do App{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/custom.css') }}" rel="stylesheet">
 </head>
 <body>
-    <header>
-        <h1>To-Do App</h1>
-        <nav>
-            <a href="{{ url_for('index') }}">Home</a>
-        </nav>
-        <!-- 検索フォームを追加 -->
-        <form action="{{ url_for('search') }}" method="GET">
-            <input type="text" name="query" placeholder="Search tasks...">
-            <button type="submit">Search</button>
-        </form>
-    </header>
-    <main>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="{{ url_for('index') }}">To-Do App</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+                </li>
+            </ul>
+            <form class="form-inline my-2 my-lg-0" action="{{ url_for('search') }}" method="GET">
+                <input class="form-control mr-sm-2" type="search" placeholder="Search tasks..." name="query">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            </form>
+        </div>
+    </nav>
+    <div class="container mt-4">
         {% block content %}{% endblock %}
-    </main>
-    <footer>
-        <p>&copy; 2024 To-Do App</p>
+    </div>
+    <footer class="footer mt-auto py-3 bg-light">
+        <div class="container">
+            <span class="text-muted">&copy; 2024 To-Do App</span>
+        </div>
     </footer>
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

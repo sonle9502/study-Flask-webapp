@@ -2,7 +2,6 @@ from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime
-from config import Config  
 import os
 from config import DevelopmentConfig, TestingConfig, ProductionConfig
 

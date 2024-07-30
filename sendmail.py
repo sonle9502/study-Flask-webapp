@@ -10,7 +10,6 @@ def check_due_tasks():
     now = datetime.now()
     tasks = Todo.query.all()
     for task in tasks:
-        if task.due_date and task.due_date <= now:
             subject = "Task Due Reminder"
             body = f"Task '{task.content}' is due now!"
             to = "soncuc182304@gmail.com"  # Replace with the recipient's email

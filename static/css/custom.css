@@ -27,3 +27,11 @@ body {
     display: flex;
     justify-content: right; /* 子要素を左寄せ */
 }
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+}
+.navbar-brand svg {
+    margin-right: 8px; /* アイコンとテキストの間にスペースを追加 */
+}

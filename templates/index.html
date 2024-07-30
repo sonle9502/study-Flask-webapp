@@ -22,7 +22,9 @@
     {% for todo in todos %}
     <div class="list-group-item">
         <p>Content : {{  todo.content }} </p>
-        <p>Detail : {{ todo.description }} - {{ todo.due_date }} </p>
+        <p>Detail : {{ todo.description }} </p>
+        <p>Due date : {{ todo.due_date }} </p>
+
         <a href="{{ url_for('delete', id=todo.id) }}" class="btn btn-danger btn-sm">Delete</a>
         <a href="{{ url_for('detail', id=todo.id) }}" class="btn btn-secondary btn-sm">Update</a>
     </div>

@@ -3,11 +3,21 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime
 from config import Config  
+import os
+from config import DevelopmentConfig, TestingConfig, ProductionConfig
 
 app = Flask(__name__)
 app.config.from_object(Config) 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+env = os.environ.get('FLASK_ENV', 'development')
+
+if env == 'development':
+    app.config.from_object(DevelopmentConfig)
+elif env == 'testing':
+    app.config.from_object(TestingConfig)
+else:
+    app.config.from_object(ProductionConfig)
 
 class Todo(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -102,6 +102,5 @@ def internal_error(error):
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()  # Ensure all tables are created
-        scheduler_thread = Thread(target=run_scheduler)
-        scheduler_thread.start()
+        run_scheduler()
         app.run(debug=True)

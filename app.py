@@ -12,7 +12,7 @@ import logging
 app = Flask(__name__)
 
 # Cấu hình logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 # 環境変数から現在の環境を取得
 env = os.environ.get('FLASK_ENV', 'development')

@@ -110,6 +110,6 @@ if __name__ == "__main__":
         # スケジューラを独立したスレッドで開始
         scheduler_thread = Thread(target=start_scheduler, args=(app,))
         scheduler_thread.start()
-        app.run() 
+        app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=True) 
 
 

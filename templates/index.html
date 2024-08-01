@@ -18,9 +18,6 @@
     
 
 <div class="list-group">
-    <!-- <div class="list-group-item">
-        <a href="{{ url_for('send_email') }}" class="btn btn-secondary btn-sm">send_email</a>
-    </div> -->
     {% for todo in todos %}
     <div class="list-group-item">
         <p>Content : {{  todo.content }} </p>
@@ -30,8 +27,6 @@
         <a href="{{ url_for('delete', id=todo.id) }}" class="btn btn-danger btn-sm">Delete</a>
         <a href="{{ url_for('detail', id=todo.id) }}" class="btn btn-secondary btn-sm">Update</a>
     </div>
-    
     {% endfor %}
-    
 </div>
 {% endblock %}

@@ -12,7 +12,7 @@ import logging
 app = Flask(__name__)
 
 # Cấu hình logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 # 環境変数から現在の環境を取得
 env = os.environ.get('FLASK_ENV', 'development')
@@ -108,9 +108,6 @@ def internal_error(error):
 
 if __name__ == "__main__":
     with app.app_context():
-        logging.info("called appcpmtext")
-        logging.basicConfig(level=logging.INFO, filename='app.log', filemode='w',
-                    format='%(name)s - %(levelname)s - %(message)s')
         logging.info("This is an info log message")
         db.create_all()  # Ensure all tables are created
         # スケジューラを独立したスレッドで開始

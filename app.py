@@ -4,7 +4,7 @@ from flask_migrate import Migrate
 from datetime import datetime
 import os
 from config import DevelopmentConfig, TestingConfig, ProductionConfig
-from sendmail import start_scheduler
+from sendmail import start_scheduler 
 from models import db, Todo  # Import from models
 from threading import Thread
 import logging
@@ -102,6 +102,7 @@ def internal_error(error):
 #     # Waitress serverを使用してアプリケーションを起動
 #     serve(app, host='0.0.0.0', port=8080)
 
+
 if __name__ == "__main__":
     with app.app_context():
         logging.info("called appcpmtext")
@@ -110,3 +111,5 @@ if __name__ == "__main__":
         scheduler_thread = Thread(target=start_scheduler, args=(app,))
         scheduler_thread.start()
         app.run() 
+
+

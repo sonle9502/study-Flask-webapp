@@ -12,6 +12,8 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import smtplib
 from dotenv import load_dotenv
+import schedule , time
+import threading
 
 app = Flask(__name__)
 load_dotenv()
@@ -121,13 +123,40 @@ def send_email():
         print(f"Failed to send test email: {e}")
     return redirect(url_for('index'))
 
+def run_scheduler(app):
+    print(f"Scheduler is running in thread: {threading.current_thread().name}")
+    schedule.every(1).minutes.do(check_due_tasks, app=app)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
+
+
+def check_due_tasks(app):
+    try:
+        msg = MIMEText('This is a test email')
+        msg['Subject'] = 'Test Email'
+        msg['From'] = os.getenv('MAIL_USERNAME')
+        msg['To'] = os.getenv('MAIL_USERNAME')
+        
+        with smtplib.SMTP(os.getenv('MAIL_SERVER'), int(os.getenv('MAIL_PORT'))) as server:
+            if os.getenv('MAIL_USE_TLS') == 'True':
+                server.starttls()
+            server.login(os.getenv('MAIL_USERNAME'), os.getenv('MAIL_PASSWORD'))
+            server.send_message(msg)
+        print("Test email sent successfully")
+    except Exception as e:
+        print(f"Failed to send test email: {e}")
+
 if __name__ == "__main__":
     with app.app_context():
         logging.debug("This is an info log message")
         db.create_all()  # Ensure all tables are created
-        # スケジューラを独立したスレッドで開始
-        scheduler_thread = Thread(target=start_scheduler, args=(app,))
+        scheduler_thread = Thread(target=run_scheduler, args=(app,))
         scheduler_thread.start()
+        # スケジューラを独立したスレッドで開始
+        # scheduler_thread = Thread(target=start_scheduler, args=(app,))
+        # scheduler_thread.start()
         app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=True) 
 
 

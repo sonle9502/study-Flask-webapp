@@ -9,10 +9,16 @@ from flask import current_app as app
 from threading import Thread
 import os
 from dotenv import load_dotenv
+import logging
 
+# Nạp các biến môi trường từ tệp .env
 load_dotenv()
 
+# Cấu hình logging
+logging.basicConfig(level=logging.INFO)
+
 def send_email(subject, body, to):
+    logging.info("send_email function called")
     try:
         print(f"Connecting to {os.getenv('MAIL_SERVER')} on port {os.getenv('MAIL_PORT')}")
         server = smtplib.SMTP(os.getenv('MAIL_SERVER'), int(os.getenv('MAIL_PORT')))
@@ -39,6 +45,8 @@ def send_email(subject, body, to):
         print("Email sent successfully")
     except Exception as e:
         print(f"Failed to send email: {e}")
+        logging.info(f"Failed to send email: {e}")
+
   
 
 def check_due_tasks(app):

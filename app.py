@@ -7,8 +7,12 @@ from config import DevelopmentConfig, TestingConfig, ProductionConfig
 from sendmail import start_scheduler
 from models import db, Todo  # Import from models
 from threading import Thread
+import logging
 
 app = Flask(__name__)
+
+# Cấu hình logging
+logging.basicConfig(level=logging.INFO)
 
 # 環境変数から現在の環境を取得
 env = os.environ.get('FLASK_ENV', 'development')
@@ -100,6 +104,7 @@ def internal_error(error):
 
 if __name__ == "__main__":
     with app.app_context():
+        logging.info("called appcpmtext")
         db.create_all()  # Ensure all tables are created
         # スケジューラを独立したスレッドで開始
         scheduler_thread = Thread(target=start_scheduler, args=(app,))

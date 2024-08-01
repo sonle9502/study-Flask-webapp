@@ -36,6 +36,9 @@ def index():
 
 @app.route('/add', methods=['GET', 'POST'])
 def add():
+    logging.basicConfig(level=logging.INFO, filename='app.log', filemode='w',
+                    format='%(name)s - %(levelname)s - %(message)s')
+    logging.info("This is an info log message")
     if request.method == 'POST':
         # フォームからデータを取得
         content = request.form['content']
@@ -106,6 +109,9 @@ def internal_error(error):
 if __name__ == "__main__":
     with app.app_context():
         logging.info("called appcpmtext")
+        logging.basicConfig(level=logging.INFO, filename='app.log', filemode='w',
+                    format='%(name)s - %(levelname)s - %(message)s')
+        logging.info("This is an info log message")
         db.create_all()  # Ensure all tables are created
         # スケジューラを独立したスレッドで開始
         scheduler_thread = Thread(target=start_scheduler, args=(app,))

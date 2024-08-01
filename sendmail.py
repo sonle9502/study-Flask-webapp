@@ -7,30 +7,39 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from flask import current_app as app
 from threading import Thread
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def send_email(subject, body, to):
-    from_email = "soncuc182304@gmail.com"
-    password = "vrtt wsgn ktup mmga"  # 生成されたアプリ パスワードを入力
-    smtp_server = "smtp.gmail.com"
-    smtp_port = 587
-
-    msg = MIMEMultipart()
-    msg['From'] = from_email
-    msg['To'] = to
-    msg['Subject'] = subject
-
-    msg.attach(MIMEText(body, 'plain'))
-
     try:
-        server = smtplib.SMTP(smtp_server, smtp_port)
-        server.starttls()
-        server.login(from_email, password)
-        text = msg.as_string()
-        server.sendmail(from_email, to, text)
+        print(f"Connecting to {os.getenv('MAIL_SERVER')} on port {os.getenv('MAIL_PORT')}")
+        server = smtplib.SMTP(os.getenv('MAIL_SERVER'), int(os.getenv('MAIL_PORT')))
+        print("Connection established")
+        if os.getenv('MAIL_USE_TLS') == 'True':
+            print("Starting TLS")
+            server.starttls()
+        server.login(os.getenv('MAIL_USERNAME'), os.getenv('MAIL_PASSWORD'))
+        print("Logged in to email server")
+        
+        msg = MIMEMultipart()
+        msg['From'] = os.getenv('MAIL_USERNAME')
+        msg['To'] = to
+        msg['Subject'] = subject
+
+        msg.attach(MIMEText(body, 'plain'))
+
+        server = smtplib.SMTP(os.getenv('MAIL_SERVER'), int(os.getenv('MAIL_PORT')))
+        if os.getenv('MAIL_USE_TLS') == 'True':
+            server.starttls()
+        server.login(os.getenv('MAIL_USERNAME'), os.getenv('MAIL_PASSWORD'))
+        server.send_message(msg)
         server.quit()
         print("Email sent successfully")
     except Exception as e:
         print(f"Failed to send email: {e}")
+  
 
 def check_due_tasks(app):
     with app.app_context():  # アプリケーションコンテキストを設定

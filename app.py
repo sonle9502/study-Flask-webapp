@@ -123,7 +123,7 @@ def send_email():
 
 if __name__ == "__main__":
     with app.app_context():
-        logging.info("This is an info log message")
+        logging.debug("This is an info log message")
         db.create_all()  # Ensure all tables are created
         # スケジューラを独立したスレッドで開始
         # scheduler_thread = Thread(target=start_scheduler, args=(app,))

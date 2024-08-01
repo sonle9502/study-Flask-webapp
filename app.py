@@ -103,31 +103,31 @@ def internal_error(error):
     db.session.rollback()
     return render_template('500.html'), 500
 
-@app.route('/sendmail', methods=['GET'])
-def send_email():
-    try:
-        msg = MIMEText('This is a test email')
-        msg['Subject'] = 'Test Email'
-        msg['From'] = os.getenv('MAIL_USERNAME')
-        msg['To'] = os.getenv('MAIL_USERNAME')
+# @app.route('/sendmail', methods=['GET'])
+# def send_email():
+#     try:
+#         msg = MIMEText('This is a test email')
+#         msg['Subject'] = 'Test Email'
+#         msg['From'] = os.getenv('MAIL_USERNAME')
+#         msg['To'] = os.getenv('MAIL_USERNAME')
         
-        with smtplib.SMTP(os.getenv('MAIL_SERVER'), int(os.getenv('MAIL_PORT'))) as server:
-            if os.getenv('MAIL_USE_TLS') == 'True':
-                server.starttls()
-            server.login(os.getenv('MAIL_USERNAME'), os.getenv('MAIL_PASSWORD'))
-            server.send_message(msg)
-        print("Test email sent successfully")
-    except Exception as e:
-        print(f"Failed to send test email: {e}")
-    return redirect(url_for('index'))
+#         with smtplib.SMTP(os.getenv('MAIL_SERVER'), int(os.getenv('MAIL_PORT'))) as server:
+#             if os.getenv('MAIL_USE_TLS') == 'True':
+#                 server.starttls()
+#             server.login(os.getenv('MAIL_USERNAME'), os.getenv('MAIL_PASSWORD'))
+#             server.send_message(msg)
+#         print("Test email sent successfully")
+#     except Exception as e:
+#         print(f"Failed to send test email: {e}")
+#     return redirect(url_for('index'))
 
 if __name__ == "__main__":
     with app.app_context():
         logging.debug("This is an info log message")
         db.create_all()  # Ensure all tables are created
         # スケジューラを独立したスレッドで開始
-        # scheduler_thread = Thread(target=start_scheduler, args=(app,))
-        # scheduler_thread.start()
+        scheduler_thread = Thread(target=start_scheduler, args=(app,))
+        scheduler_thread.start()
         app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=True) 
 
 

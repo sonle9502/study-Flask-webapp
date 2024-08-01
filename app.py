@@ -4,10 +4,9 @@ from flask_migrate import Migrate
 from datetime import datetime
 import os
 from config import DevelopmentConfig, TestingConfig, ProductionConfig
-from threading import Thread
-from sendmail import run_scheduler
+from sendmail import start_scheduler
 from models import db, Todo  # Import from models
-
+from threading import Thread
 
 app = Flask(__name__)
 
@@ -73,6 +72,7 @@ def detail(id):
         todo.content =  request.form['content']
         todo.description = request.form['description']
         todo.due_date = datetime.strptime(request.form['due_date'], '%Y-%m-%dT%H:%M') if request.form['due_date'] else None
+        todo.email_sent = False
         db.session.commit()
         return redirect(url_for('index'))
     return render_template('detail.html', todo=todo)
@@ -98,10 +98,10 @@ def internal_error(error):
 #     # Waitress serverを使用してアプリケーションを起動
 #     serve(app, host='0.0.0.0', port=8080)
 
-# 開発環境
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()  # Ensure all tables are created
-        scheduler_thread = Thread(target=run_scheduler)
+        # スケジューラを独立したスレッドで開始
+        scheduler_thread = Thread(target=start_scheduler, args=(app,))
         scheduler_thread.start()
-        app.run(debug=True)
+        app.run() 

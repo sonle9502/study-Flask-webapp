@@ -8,6 +8,8 @@ class Todo(db.Model):
     completed = db.Column(db.Boolean, default=False)
     description = db.Column(db.Text, nullable=True)
     due_date = db.Column(db.DateTime, nullable=True)  # 期限を追加
+    email_sent = db.Column(db.Boolean, default=False) #メールを送信されたかどうかを判断
 
     def __repr__(self):
         return f'<Task {self.id}>'
+    

@@ -11,7 +11,7 @@ import smtplib
 from dotenv import load_dotenv
 from threading import Thread
 import schedule
-from sendmail import start_scheduler ,check_due_tasks
+from sendmail import check_due_tasks
 import time
 
 # from celeryF import make_celery

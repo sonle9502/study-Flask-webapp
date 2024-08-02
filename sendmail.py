@@ -77,13 +77,3 @@ def check_due_tasks(app):
                 # メール送信後にフラグを更新
                 task.email_sent = True
                 db.session.commit()
-
-def run_scheduler():
-    while True:
-        schedule.run_pending()
-        time.sleep(5)
-
-def start_scheduler(app):
-    
-    with app.app_context():
-        run_scheduler()

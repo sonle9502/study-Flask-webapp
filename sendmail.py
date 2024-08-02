@@ -64,6 +64,7 @@ def send_email(subject, body, to):
   
 
 def check_due_tasks(app):
+    print("every 1")
     with app.app_context():  # アプリケーションコンテキストを設定
         now = datetime.now()
         tasks = Todo.query.all()
@@ -80,11 +81,9 @@ def check_due_tasks(app):
 def run_scheduler():
     while True:
         schedule.run_pending()
-        time.sleep(1)
+        time.sleep(5)
 
 def start_scheduler(app):
     
     with app.app_context():
-        schedule.every(1).minutes.do(check_due_tasks,  app) 
-        scheduler_thread = Thread(target=run_scheduler)
-        scheduler_thread.start()
+        run_scheduler()

@@ -1,19 +1,21 @@
-from flask import Flask, render_template, request, redirect, url_for ,jsonify
+from flask import Flask, render_template, request, redirect, url_for 
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime
 import os
 from config import DevelopmentConfig, TestingConfig, ProductionConfig
-from sendmail import start_scheduler 
 from models import db, Todo  # Import from models
-from threading import Thread
 import logging
 from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 import smtplib
 from dotenv import load_dotenv
-import schedule , time
-import threading
+from threading import Thread
+import schedule
+from sendmail import start_scheduler ,check_due_tasks
+import time
+
+# from celeryF import make_celery
+
 
 app = Flask(__name__)
 load_dotenv()
@@ -35,6 +37,8 @@ else:
 # データベースの初期化
 db.init_app(app)
 migrate = Migrate(app, db)
+
+
 
 @app.route('/')
 def index():
@@ -123,66 +127,20 @@ def send_email():
         print(f"Failed to send test email: {e}")
     return redirect(url_for('index'))
 
-def run_scheduler(app):
-    logging.info(f"Scheduler is running in thread: {threading.current_thread().name}")
-    schedule.every(1).minutes.do(check_due_tasks, app=app)
+schedule.clear()  # 既存のスケジュールをクリア
+schedule.every().minute.at(":01").do(check_due_tasks, app=app)
+# schedule.every().second.do(check_due_tasks, app=app)
+
+def run_scheduler():
     while True:
         schedule.run_pending()
-        time.sleep(1)
-
-def check_due_tasks(app):
-    with app.app_context():  # アプリケーションコンテキストを設定
-        now = datetime.now()
-        tasks = Todo.query.all()
-        for task in tasks:
-            if not task.email_sent and task.due_date and task.due_date <= now :
-                subject = "Task Due Reminder"
-                body = f"Task : '{task.content}'\nDescription : {task.description} is due now!"
-                to = "soncuc182304@gmail.com"
-                sendmail(subject, body, to)
-                # メール送信後にフラグを更新
-                task.email_sent = True
-                db.session.commit()
-
-def sendmail(subject, body, to):
-    logging.info("send_email function called")
-    try:
-        print(f"Connecting to {os.getenv('MAIL_SERVER')} on port {os.getenv('MAIL_PORT')}")
-        server = smtplib.SMTP(os.getenv('MAIL_SERVER'), int(os.getenv('MAIL_PORT')))
-        print("Connection established")
-        if os.getenv('MAIL_USE_TLS') == 'True':
-            print("Starting TLS")
-            server.starttls()
-        server.login(os.getenv('MAIL_USERNAME'), os.getenv('MAIL_PASSWORD'))
-        print("Logged in to email server")
-        
-        msg = MIMEMultipart()
-        msg['From'] = os.getenv('MAIL_USERNAME')
-        msg['To'] = to
-        msg['Subject'] = subject
-
-        msg.attach(MIMEText(body, 'plain'))
-
-        server = smtplib.SMTP(os.getenv('MAIL_SERVER'), int(os.getenv('MAIL_PORT')))
-        if os.getenv('MAIL_USE_TLS') == 'True':
-            server.starttls()
-        server.login(os.getenv('MAIL_USERNAME'), os.getenv('MAIL_PASSWORD'))
-        server.send_message(msg)
-        server.quit()
-        print("Email sent successfully")
-    except Exception as e:
-        print(f"Failed to send email: {e}")
-        logging.info(f"Failed to send email: {e}")
+        time.sleep(5)
 
 if __name__ == "__main__":
     with app.app_context():
         logging.debug("This is an info log message")
         db.create_all()  # Ensure all tables are created
-        scheduler_thread = Thread(target=run_scheduler, args=(app,))
-        scheduler_thread.start()
-        # スケジューラを独立したスレッドで開始
-        # scheduler_thread = Thread(target=start_scheduler, args=(app,))
-        # scheduler_thread.start()
+        Thread(target=run_scheduler).start()
         app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=True) 
 
 

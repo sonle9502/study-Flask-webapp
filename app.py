@@ -124,29 +124,55 @@ def send_email():
     return redirect(url_for('index'))
 
 def run_scheduler(app):
-    print(f"Scheduler is running in thread: {threading.current_thread().name}")
+    logging.info(f"Scheduler is running in thread: {threading.current_thread().name}")
     schedule.every(1).minutes.do(check_due_tasks, app=app)
     while True:
         schedule.run_pending()
         time.sleep(1)
 
-
-
 def check_due_tasks(app):
+    with app.app_context():  # アプリケーションコンテキストを設定
+        now = datetime.now()
+        tasks = Todo.query.all()
+        for task in tasks:
+            if not task.email_sent and task.due_date and task.due_date <= now :
+                subject = "Task Due Reminder"
+                body = f"Task : '{task.content}'\nDescription : {task.description} is due now!"
+                to = "soncuc182304@gmail.com"
+                sendmail(subject, body, to)
+                # メール送信後にフラグを更新
+                task.email_sent = True
+                db.session.commit()
+
+def sendmail(subject, body, to):
+    logging.info("send_email function called")
     try:
-        msg = MIMEText('This is a test email')
-        msg['Subject'] = 'Test Email'
-        msg['From'] = os.getenv('MAIL_USERNAME')
-        msg['To'] = os.getenv('MAIL_USERNAME')
+        print(f"Connecting to {os.getenv('MAIL_SERVER')} on port {os.getenv('MAIL_PORT')}")
+        server = smtplib.SMTP(os.getenv('MAIL_SERVER'), int(os.getenv('MAIL_PORT')))
+        print("Connection established")
+        if os.getenv('MAIL_USE_TLS') == 'True':
+            print("Starting TLS")
+            server.starttls()
+        server.login(os.getenv('MAIL_USERNAME'), os.getenv('MAIL_PASSWORD'))
+        print("Logged in to email server")
         
-        with smtplib.SMTP(os.getenv('MAIL_SERVER'), int(os.getenv('MAIL_PORT'))) as server:
-            if os.getenv('MAIL_USE_TLS') == 'True':
-                server.starttls()
-            server.login(os.getenv('MAIL_USERNAME'), os.getenv('MAIL_PASSWORD'))
-            server.send_message(msg)
-        print("Test email sent successfully")
+        msg = MIMEMultipart()
+        msg['From'] = os.getenv('MAIL_USERNAME')
+        msg['To'] = to
+        msg['Subject'] = subject
+
+        msg.attach(MIMEText(body, 'plain'))
+
+        server = smtplib.SMTP(os.getenv('MAIL_SERVER'), int(os.getenv('MAIL_PORT')))
+        if os.getenv('MAIL_USE_TLS') == 'True':
+            server.starttls()
+        server.login(os.getenv('MAIL_USERNAME'), os.getenv('MAIL_PASSWORD'))
+        server.send_message(msg)
+        server.quit()
+        print("Email sent successfully")
     except Exception as e:
-        print(f"Failed to send test email: {e}")
+        print(f"Failed to send email: {e}")
+        logging.info(f"Failed to send email: {e}")
 
 if __name__ == "__main__":
     with app.app_context():

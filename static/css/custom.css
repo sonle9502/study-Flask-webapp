@@ -1,6 +1,8 @@
 html, body {
     height: 100%;
     margin: 0;
+    background-color: #333; /* 暗い背景色 */
+    color: #000; /* テキストを黒に設定 */
 }
 
 body {
@@ -10,13 +12,16 @@ body {
 
 .container {
     flex: 1;
+    background-color: #444; /* container の背景色を少し明るい暗色に設定 */
+    color: #000; /* container 内のテキストも黒に設定 */
 }
 
 .footer {
-    background-color: #f8f9fa;
+    background-color: #222; /* footer の背景色をさらに暗い色に設定 */
     padding: 1rem;
     text-align: center;
-    border-top: 1px solid #e9ecef;
+    border-top: 1px solid #555; /* ボーダーの色も調整 */
+    color: #000; /* footer 内のテキストも黒に設定 */
 }
 
 .your-scroll-container {
@@ -25,13 +30,16 @@ body {
 
 .navbar-collapse {
     display: flex;
-    justify-content: right; /* 子要素を左寄せ */
+    justify-content: right; /* 子要素を右寄せ */
 }
 
 .navbar-brand {
     display: flex;
     align-items: center;
+    color: #000; /* navbar-brand のテキストも黒に設定 */
 }
+
 .navbar-brand svg {
     margin-right: 8px; /* アイコンとテキストの間にスペースを追加 */
+    color: #000; /* アイコンの色も黒に設定 */
 }

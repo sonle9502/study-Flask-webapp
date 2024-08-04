@@ -9,7 +9,16 @@ class Todo(db.Model):
     description = db.Column(db.Text, nullable=True)
     due_date = db.Column(db.DateTime, nullable=True)  # 期限を追加
     email_sent = db.Column(db.Boolean, default=False) #メールを送信されたかどうかを判断
+    images = db.relationship('Image', backref='todo', lazy=True)
 
     def __repr__(self):
         return f'<Task {self.id}>'
+
+class Image(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(300), nullable=False)
+    todo_id = db.Column(db.Integer, db.ForeignKey('todo.id'), nullable=False)
+
+    def __repr__(self):
+        return f'<Image {self.id}>'
     

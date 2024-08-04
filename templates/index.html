@@ -26,11 +26,24 @@
         <p>Content : {{  todo.content }} </p>
         <p>Detail : {{ todo.description }} </p>
         <p>Due date : {{ todo.due_date }} </p>
+        <p>
+            {% if todo.image_filename %}
+            <img src="{{ url_for('get_image', id=todo.id) }}" alt="Todo Image" width="100">
+            {% endif %}
+            {% if todo.images %}
+                {% for image in todo.images %}
+                    <img src="{{ url_for('get_image', id=image.id) }}" alt="Todo Image" width="100">
+                {% endfor %}
+            {% endif %}
 
+            <form action="{{ url_for('upload_images', id=todo.id) }}" method="POST" enctype="multipart/form-data">
+                <input type="file" name="files" multiple>
+                <button type="submit">Upload Images</button>
+            </form>
+        </p>   
         <a href="{{ url_for('delete', id=todo.id) }}" class="btn btn-danger btn-sm">Delete</a>
-        <a href="{{ url_for('detail', id=todo.id) }}" class="btn btn-secondary btn-sm">Update</a>
+        <a href="{{ url_for('detail', id=todo.id) }}" class="btn btn-secondary btn-sm">Detail</a>
     </div>
-    
     {% endfor %}
     
 </div>

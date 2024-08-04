@@ -1,10 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for 
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory   
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime
 import os
 from config import DevelopmentConfig, TestingConfig, ProductionConfig
-from models import db, Todo  # Import from models
+from models import db, Todo ,Image # Import from models
 import logging
 from email.mime.text import MIMEText
 import smtplib
@@ -20,6 +20,7 @@ import time
 app = Flask(__name__)
 load_dotenv()
 
+
 # Cấu hình logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
@@ -34,10 +35,54 @@ elif env == 'testing':
 else:
     app.config.from_object(ProductionConfig)
 
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///todo.db'
+app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'uploads')
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB limit
+app.secret_key = 'supersecretkey'
+
+# Ensure the uploads directory exists at startup
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 # データベースの初期化
 db.init_app(app)
 migrate = Migrate(app, db)
 
+@app.route('/image/<int:id>')
+def get_image(id):
+    # Query for the image by its ID
+    image = Image.query.get_or_404(id)
+    # Get the filename from the Image object
+    filename = image.filename
+    # Return the image file from the upload directory
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+@app.route('/upload_images/<int:id>', methods=['POST'])
+def upload_images(id):
+    app.logger.debug(f"Request method: {request.method}")
+    todo = Todo.query.get_or_404(id)
+    if 'files' not in request.files:
+        app.logger.error('No files part')
+        return redirect(request.url)
+
+    files = request.files.getlist('files')
+    if not files:
+        app.logger.error('No files uploaded')
+        return redirect(request.url)
+
+    for file in files:
+        if file and file.filename != '':
+            filename = file.filename
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+            # Ensure the directory exists
+            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+            file.save(file_path)
+            new_image = Image(filename=filename, todo_id=todo.id)
+            db.session.add(new_image)
+            app.logger.info(f'File {filename} uploaded successfully')
+
+    db.session.commit()
+    return redirect(url_for('index', id=todo.id))
 
 
 @app.route('/')
@@ -83,13 +128,19 @@ def delete(id):
 def detail(id):
     todo = Todo.query.get_or_404(id)
     if request.method == 'POST':
-        # フォームからデータを取得し、タスクを更新する処理
-        todo.content =  request.form['content']
+        todo.content = request.form['content']
         todo.description = request.form['description']
-        todo.due_date = datetime.strptime(request.form['due_date'], '%Y-%m-%dT%H:%M') if request.form['due_date'] else None
-        todo.email_sent = False
+        due_date = request.form['due_date']
+        if due_date:
+            todo.due_date = datetime.strptime(due_date, '%Y-%m-%dT%H:%M')
+        else:
+            todo.due_date = None
+        
+        
+        
         db.session.commit()
-        return redirect(url_for('index'))
+        return redirect(url_for('detail', id=todo.id))
+
     return render_template('detail.html', todo=todo)
 
 @app.route('/search', methods=['GET'])
@@ -116,7 +167,7 @@ def send_email():
         msg['Subject'] = 'Test Email'
         msg['From'] = os.getenv('MAIL_USERNAME')
         msg['To'] = os.getenv('MAIL_USERNAME')
-        
+
         with smtplib.SMTP(os.getenv('MAIL_SERVER'), int(os.getenv('MAIL_PORT'))) as server:
             if os.getenv('MAIL_USE_TLS') == 'True':
                 server.starttls()
@@ -128,7 +179,7 @@ def send_email():
     return redirect(url_for('index'))
 
 schedule.clear()  # 既存のスケジュールをクリア
-schedule.every().minute.at(":01").do(check_due_tasks, app=app)
+# schedule.every().minute.at(":01").do(check_due_tasks, app=app)
 # schedule.every().second.do(check_due_tasks, app=app)
 
 def run_scheduler():
@@ -140,7 +191,7 @@ if __name__ == "__main__":
     with app.app_context():
         logging.debug("This is an info log message")
         db.create_all()  # Ensure all tables are created
-        Thread(target=run_scheduler).start()
-        app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=True) 
+        # Thread(target=run_scheduler).start()
+        app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=True)
 
 

@@ -61,7 +61,6 @@ def send_email(subject, body, to):
     #     print("Test email sent successfully")
     # except Exception as e:
     #     print(f"Failed to send test email: {e}")
-  
 
 def check_due_tasks(app):
     print("every 1")

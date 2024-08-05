@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory   
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory   , send_file, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime
@@ -13,10 +13,9 @@ from threading import Thread
 import schedule
 from sendmail import check_due_tasks
 import time
+from io import BytesIO
 
 # from celeryF import make_celery
-
-
 app = Flask(__name__)
 load_dotenv()
 
@@ -35,59 +34,91 @@ elif env == 'testing':
 else:
     app.config.from_object(ProductionConfig)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///todo.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(os.path.dirname(__file__), os.path.pardir, 'db.sqlite')}"
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB limit
 app.secret_key = 'supersecretkey'
 
 # Ensure the uploads directory exists at startup
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+# os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 # データベースの初期化
 db.init_app(app)
 migrate = Migrate(app, db)
 
+def create_app(config_class=DevelopmentConfig):
+    app = Flask(__name__)
+    app.config.from_object(config_class)
+
+    # Initialize extensions
+    db.init_app(app)
+    migrate.init_app(app, db)
+
+    # Create tables and any other setup tasks
+    with app.app_context():
+        db.create_all()
+
+    return app
+
 @app.route('/image/<int:id>')
 def get_image(id):
-    # Query for the image by its ID
     image = Image.query.get_or_404(id)
-    # Get the filename from the Image object
-    filename = image.filename
-    # Return the image file from the upload directory
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    return send_file(BytesIO(image.data), mimetype='image/jpeg')
+
+# @app.route('/upload_images/<int:id>', methods=['POST'])
+# def upload_images(id):
+#     app.logger.debug(f"Request method: {request.method}")
+#     todo = Todo.query.get_or_404(id)
+#     if 'files' not in request.files:
+#         app.logger.error('No files part')
+#         return redirect(request.url)
+
+#     files = request.files.getlist('files')
+#     if not files:
+#         app.logger.error('No files uploaded')
+#         return redirect(request.url)
+
+#     for file in files:
+#         if file and file.filename != '':
+#             filename = file.filename
+#             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+#             # Ensure the directory exists
+#             os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+#             file.save(file_path)
+#             new_image = Image(filename=filename, todo_id=todo.id)
+#             db.session.add(new_image)
+#             app.logger.info(f'File {filename} uploaded successfully')
+
+#     db.session.commit()
+#     return redirect(url_for('index', id=todo.id))
 
 @app.route('/upload_images/<int:id>', methods=['POST'])
 def upload_images(id):
-    app.logger.debug(f"Request method: {request.method}")
-    todo = Todo.query.get_or_404(id)
     if 'files' not in request.files:
-        app.logger.error('No files part')
         return redirect(request.url)
-
+    
     files = request.files.getlist('files')
     if not files:
-        app.logger.error('No files uploaded')
         return redirect(request.url)
-
+    
     for file in files:
-        if file and file.filename != '':
-            filename = file.filename
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-
-            # Ensure the directory exists
-            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-
-            file.save(file_path)
-            new_image = Image(filename=filename, todo_id=todo.id)
-            db.session.add(new_image)
-            app.logger.info(f'File {filename} uploaded successfully')
-
+        if file.filename == '':
+            continue
+        
+        image = Image(
+            filename=file.filename,
+            data=file.read(),  # 画像データを読み込み
+            todo_id=id
+        )
+        db.session.add(image)
+    
     db.session.commit()
-    return redirect(url_for('index', id=todo.id))
-
+    return redirect(url_for('index'))
 
 @app.route('/')
 def index():
-    tasks = Todo.query.all()
+    tasks = Todo.query.order_by(Todo.created_at.desc()).all()
     return render_template('index.html', todos=tasks)
 
 @app.route('/add', methods=['GET', 'POST'])
@@ -139,7 +170,7 @@ def detail(id):
         
         
         db.session.commit()
-        return redirect(url_for('detail', id=todo.id))
+        return redirect(url_for('index', id=todo.id))
 
     return render_template('detail.html', todo=todo)
 

@@ -12,6 +12,7 @@ class Todo(db.Model):
     email_sent = db.Column(db.Boolean, default=False) #メールを送信されたかどうかを判断
     images = db.relationship('Image', backref='todo', lazy=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    comments = db.relationship('Comment', backref='todo', lazy=True)
 
     def __repr__(self):
         return f'<Task {self.id}>'
@@ -24,4 +25,13 @@ class Image(db.Model):
 
     def __repr__(self):
         return f'<Image {self.id}>'
+    
+class Comment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.String(500), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    todo_id = db.Column(db.Integer, db.ForeignKey('todo.id'), nullable=False)
+    
+    def __repr__(self):
+        return f'<Comment {self.id}>'
     

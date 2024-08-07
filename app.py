@@ -1,10 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory   , send_file, abort
+from flask import Flask, render_template, request, redirect, url_for, send_file, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime
 import os
 from config import DevelopmentConfig, TestingConfig, ProductionConfig
-from models import db, Todo ,Image # Import from models
+from models import db, Todo ,Image ,Comment
 import logging
 from email.mime.text import MIMEText
 import smtplib
@@ -14,12 +14,16 @@ import schedule
 from sendmail import check_due_tasks
 import time
 from io import BytesIO
+from forms import CommentForm
+from datetime import datetime, timedelta
+from flask_wtf import CSRFProtect
 
 # from celeryF import make_celery
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static/my-react-app/build', template_folder='static/my-react-app/build')
 load_dotenv()
 
-
+app.config['SECRET_KEY'] = '9988551100'
+csrf = CSRFProtect(app)
 # Cấu hình logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
@@ -39,8 +43,6 @@ app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB limit
 app.secret_key = 'supersecretkey'
 
-# Ensure the uploads directory exists at startup
-# os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 # データベースの初期化
 db.init_app(app)
 migrate = Migrate(app, db)
@@ -63,35 +65,6 @@ def create_app(config_class=DevelopmentConfig):
 def get_image(id):
     image = Image.query.get_or_404(id)
     return send_file(BytesIO(image.data), mimetype='image/jpeg')
-
-# @app.route('/upload_images/<int:id>', methods=['POST'])
-# def upload_images(id):
-#     app.logger.debug(f"Request method: {request.method}")
-#     todo = Todo.query.get_or_404(id)
-#     if 'files' not in request.files:
-#         app.logger.error('No files part')
-#         return redirect(request.url)
-
-#     files = request.files.getlist('files')
-#     if not files:
-#         app.logger.error('No files uploaded')
-#         return redirect(request.url)
-
-#     for file in files:
-#         if file and file.filename != '':
-#             filename = file.filename
-#             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-
-#             # Ensure the directory exists
-#             os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-
-#             file.save(file_path)
-#             new_image = Image(filename=filename, todo_id=todo.id)
-#             db.session.add(new_image)
-#             app.logger.info(f'File {filename} uploaded successfully')
-
-#     db.session.commit()
-#     return redirect(url_for('index', id=todo.id))
 
 @app.route('/upload_images/<int:id>', methods=['POST'])
 def upload_images(id):
@@ -158,28 +131,99 @@ def delete(id):
 @app.route('/detail/<int:id>', methods=['GET', 'POST'])
 def detail(id):
     todo = Todo.query.get_or_404(id)
+    comment_form = CommentForm()
+    
     if request.method == 'POST':
-        todo.content = request.form['content']
-        todo.description = request.form['description']
-        due_date = request.form['due_date']
-        if due_date:
-            todo.due_date = datetime.strptime(due_date, '%Y-%m-%dT%H:%M')
-        else:
-            todo.due_date = None
+        if 'update_task' in request.form:
+            # Handle task update
+            todo.content = request.form['content']
+            todo.description = request.form['description']
+            todo.due_date = datetime.strptime(request.form['due_date'], '%Y-%m-%dT%H:%M')
+            db.session.commit()
+            return redirect(url_for('detail', id=id))
         
-        
-        
-        db.session.commit()
-        return redirect(url_for('index', id=todo.id))
+        elif 'add_comment' in request.form:
+            # Handle comment addition
+            if comment_form.validate_on_submit():
+                new_comment = Comment(content=comment_form.content.data, todo_id=id)
+                db.session.add(new_comment)
+                db.session.commit()
+                return redirect(url_for('detail', id=id))
+            return redirect(url_for('detail', id=id))
 
-    return render_template('detail.html', todo=todo)
+    # Assuming `created_at` is in UTC
+    comments = Comment.query.filter_by(todo_id=id).order_by(Comment.created_at.desc()).all()
+
+    for comment in comments:
+        # Adjust to your time zone offset (e.g., UTC+9 for Japan Standard Time)
+        offset = timedelta(hours=9)  # Replace with your offset
+        comment.created_at_local = (comment.created_at + offset).strftime('%Y-%m-%d %H:%M:%S')
+    
+    return render_template('detail.html', todo=todo, form=comment_form, comments=comments)
+
+@app.route('/comment/delete/<int:id>', methods=['POST'])
+def delete_comment(id):
+    comment = Comment.query.get_or_404(id)
+    todo_id = comment.todo_id
+    db.session.delete(comment)
+    db.session.commit()
+    return redirect(url_for('detail', id=todo_id))
+
+@app.route('/comment/edit/<int:id>', methods=['GET', 'POST'])
+def edit_comment(id):
+    comment = Comment.query.get_or_404(id)
+    form = CommentForm(obj=comment)
+    
+    if form.validate_on_submit():
+        comment.content = form.content.data
+        db.session.commit()
+        return redirect(url_for('detail', id=comment.todo_id))
+    
+    return render_template('edit_comment.html', form=form, comment=comment)
+
+@app.route('/comment/update/<int:id>', methods=['POST'])
+def update_comment(id):
+    comment = Comment.query.get_or_404(id)
+    data = request.get_json()
+    content = data.get('content')
+
+    if content:
+        comment.content = content
+        db.session.commit()
+        return jsonify({'message': 'Comment updated successfully.'}), 200
+
+    return jsonify({'message': 'Invalid data.'}), 400
+
+@app.route('/delete_image/<int:image_id>', methods=['DELETE'])
+def delete_image(image_id):
+    image = Image.query.get_or_404(image_id)
+    db.session.delete(image)
+    db.session.commit()
+    return '', 204
+    
+@app.route('/image/<int:image_id>')
+def image(image_id):
+    img = Image.query.get(image_id)
+    if img is None:
+        return "Image not found", 404
+    return send_file(BytesIO(img.data), mimetype='image/jpeg')
+
+@app.route('/download/<int:image_id>')
+def download_image(image_id):
+    image = Image.query.get(image_id)
+    if image is None:
+        return "File not found", 404
+
+    return send_file(BytesIO(image.data),
+        download_name=image.filename,
+        as_attachment=True)
 
 @app.route('/search', methods=['GET'])
 def search():
     query = request.args.get('query')
     tasks = Todo.query.filter(
         (Todo.content.like(f'%{query}%')) | (Todo.description.like(f'%{query}%'))
-    ).all()
+    ).order_by(Todo.created_at.desc()).all()
     return render_template('index.html', todos=tasks)
 
 @app.errorhandler(404)

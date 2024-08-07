@@ -4,6 +4,7 @@
 
 {% block content %}
 <form action="{{ url_for('add') }}" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="form-group">
         <label for="content">Task Content:</label>
         <input type="text" class="form-control" name="content" id="content" placeholder="Enter a new task">

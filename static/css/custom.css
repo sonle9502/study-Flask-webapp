@@ -1,4 +1,4 @@
-html, body {
+/* html, body {
     height: 100%;
     margin: 0;
     background-color: #333; /* 暗い背景色 */
@@ -133,4 +133,4 @@ body {
 
 .comment-content {
     outline: none; /* Ensure there's no outline hiding the cursor */
-}
+} */

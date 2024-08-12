@@ -1,0 +1,33 @@
+/* Ensure the header is fixed at the top or styled appropriately */
+.header2 {
+  position: sticky; /* or fixed if you want it to stay on top when scrolling */
+  top: 0;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #ddd;
+  padding: 0; /* Removed padding */
+  z-index: 1000; /* Ensure it appears above other content */
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.header2 .search-container {
+  display: flex;
+  align-items: center;
+  max-width: 900px;
+}
+
+.header2 .search-container input[type="search"] {
+  margin-right: 10px;
+}
+
+.header2 .search-container .btn {
+  margin-left: 10px;
+}
+
+.search-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+}

@@ -1,0 +1,23 @@
+/* src/components/Footer.css */
+
+/* フッター全体のスタイル */
+.footer {
+  background-color: #30292c !important; /* 背景色 */
+  padding: 1rem;
+  border-top: 1px solid #dee2e6;
+  text-align: center;
+  position: relative;
+  bottom: 0;
+  width: 100%;
+}
+
+/* コンテナのスタイル */
+.footer .container {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* テキストのスタイル */
+.footer .text-muted {
+  color: #6c757d;
+}

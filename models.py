@@ -14,9 +14,27 @@ class Todo(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     comments = db.relationship('Comment', backref='todo', lazy=True)
 
-    def __repr__(self):
-        return f'<Task {self.id}>'
-
+    def to_dict(self):
+        return {
+                'id': self.id,
+                'content': self.content,
+                'completed': self.completed,
+                'description': self.description,
+                'due_date': self.due_date.isoformat() if self.due_date else None,
+                'email_sent': self.email_sent,
+                'images': [{'id': image.id, 'filename': image.filename} for image in self.images],
+                'created_at': self.format_date(self.created_at),
+                'due_date': self.format_date(self.due_date),
+                'images': [{'id': image.id, 'filename': image.filename} for image in self.images],
+                'comments': [{'id': comment.id, 'text': comment.content} for comment in self.comments]
+            }
+        
+    def format_date(self, date):
+        """Format date as Japanese-style date string."""
+        if not date:
+            return None
+        return date.strftime('%Y年%m月%d日 %H時%M分')
+    
 class Image(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     filename = db.Column(db.String(300), nullable=False)

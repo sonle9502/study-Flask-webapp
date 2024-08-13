@@ -1,38 +1,17 @@
 import React from 'react';
-import { Helmet } from 'react-helmet';
 import './Header1.css'; // Ensure you have styles if needed
 
 function Header() {
   return (
     <div>
-      {/* Metadata using Helmet */}
-      <Helmet>
-        <meta charSet="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>To-Do App</title>
-        <link
-          href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-          rel="stylesheet"
-        />
-        <link
-          href="/static/css/custom.css"
-          rel="stylesheet"
-        />
-        <link
-          href="/static/css/magnific-popup.css"
-          rel="stylesheet"
-        />
-        <meta name="csrf-token" content="your-csrf-token-here" /> {/* Replace with actual token */}
-      </Helmet>
-
       {/* Visible Header Content */}
       <header className="header">
-        <nav className="navbar navbar-expand-lg navbar-light bg-light">
+        <nav className="navbar navbar-expand-lg navbar-light">
           <a className="navbar-brand" href="/">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
+              width="24"
+              height="24"
               fill="currentColor"
               className="bi bi-house-check-fill"
               viewBox="0 0 16 16"

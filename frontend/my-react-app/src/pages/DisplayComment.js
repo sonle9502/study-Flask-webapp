@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '../config';
+import './DisplayComment.css'; // CSSファイルをインポート
 
 const DisplayComment = ({ comment, onUpdate, onDelete }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -48,29 +49,33 @@ const DisplayComment = ({ comment, onUpdate, onDelete }) => {
   }, [isEditing]);
 
   return (
-    <div key={comment.id} className="card mb-3">
+    <div key={comment.id} className="card comment-card">
       <div className="card-body">
         {isEditing ? (
           <div>
             <input
               type="text"
-              className="form-control mb-2"
+              className="form-control comment-content"
               value={editedContent}
               ref={inputRef}
               onChange={(e) => setEditedContent(e.target.value)}
               onKeyDown={handleKeyDown}  // Handle Enter key press
             />
-            <button onClick={handleSave} className="btn btn-success me-2">Save</button>
-            <button onClick={handleCancel} className="btn btn-secondary">Cancel</button>
+            <div className="edit-buttons">
+              <button onClick={handleSave} className="btn btn-success">Save</button>
+              <button onClick={handleCancel} className="btn btn-secondary">Cancel</button>
+            </div>
           </div>
         ) : (
           <div>
-            <p className="card-text mb-2">{comment.content}</p>
-            <footer className="blockquote-footer text-muted">
-              <span className="timestamp">{`${comment.created_at}`}</span>
-            </footer>
-            <button onClick={handleEdit} className="btn btn-secondary">Edit</button>
-            <button onClick={handleDelete} className="btn btn-danger ms-2">Delete</button>
+            <p className="card-text comment-content">{comment.content}</p>
+              <footer className="blockquote-footer comment-timestamp">
+                <span className="timestamp">{`${comment.created_at}`}</span>
+              </footer>
+            <div className="view-buttons">
+              <button onClick={handleEdit} className="btn btn-secondary">Edit</button>
+              <button onClick={handleDelete} className="btn btn-danger">Delete</button>
+            </div>
           </div>
         )}
       </div>

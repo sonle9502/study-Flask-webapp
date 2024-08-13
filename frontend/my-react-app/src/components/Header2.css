@@ -2,19 +2,42 @@
 .header2 {
   position: sticky; /* or fixed if you want it to stay on top when scrolling */
   top: 0;
-  background-color: #f8f9fa;
+  background-color: #42464a;
   border-bottom: 1px solid #ddd;
   padding: 0; /* Removed padding */
   z-index: 1000; /* Ensure it appears above other content */
   width: 100%;
   display: flex;
   justify-content: center;
+  height: 70px;
 }
 
 .header2 .search-container {
   display: flex;
   align-items: center;
   max-width: 900px;
+  width: 100%;
+  justify-content: center;
+  height: 100%;
+}
+
+.search-container form {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 90%; /* 高さをheader2と揃える */
+  justify-content: center;
+}
+
+.search-container .btn {
+  height: 50px; /* Button height */
+  line-height: 5s0px; /* Matches the button height for vertical centering */
+  margin-right: 10px; /* Space between buttons */
+  padding: 0 10px; /* Adjust padding if necessary */
+  text-align: center; /* Center text horizontally */
+  display: flex; /* Flexbox for better centering */
+  align-items: center; /* Vertical centering */
+  justify-content: center; /* Horizontal centering */
 }
 
 .header2 .search-container input[type="search"] {

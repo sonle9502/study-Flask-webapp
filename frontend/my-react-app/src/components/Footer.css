@@ -1,23 +1,15 @@
-/* src/components/Footer.css */
-
-/* フッター全体のスタイル */
+/* Footer.css */
 .footer {
-  background-color: #30292c !important; /* 背景色 */
-  padding: 1rem;
-  border-top: 1px solid #dee2e6;
-  text-align: center;
-  position: relative;
+  background-color: #007bff; /* Set your desired background color */
+  color: #110909; /* Set text color for contrast */
+  padding: 10px 0; /* Adjust padding as needed */
+  position: flex; /* Fix the footer to the bottom */
   bottom: 0;
-  width: 100%;
+  width: 100%; /* Ensure the footer spans the full width */
+  z-index: 1000; /* Ensure the footer is on top */
 }
 
-/* コンテナのスタイル */
-.footer .container {
-  max-width: 960px;
-  margin: 0 auto;
-}
-
-/* テキストのスタイル */
-.footer .text-muted {
-  color: #6c757d;
+body {
+  margin: 0;
+  padding-bottom: 0px; /* Adjust based on footer height */
 }

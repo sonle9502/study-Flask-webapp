@@ -1,45 +1,24 @@
-/* src/components/Header.css */
-
-/* Header全体のスタイル */
+/* Header1.css */
 .header {
-  position: sticky;
-  top: 0; /* ヘッダーをページの上部に固定 */
-  background-color: #081b2f;
-  padding: 0.5rem 1rem;
-  border-bottom: 1px solid #0a1d2f;
-  z-index: 1000; /* ヘッダーを他の要素の上に表示するために高い値に設定 */
+  background-color: #d2e0ed; /* Light background for the header */
+  padding: 0px 20px;
+  border-bottom: 0px solid #dee2e6;
+  height: 60px;
+  display: flex;
+  align-items: center; /* Center the content vertically */
+  padding-bottom: 0px;
 }
 
-  
-  .header .navbar {
-    padding: 0.5rem 1rem; /* 内側の余白 */
-  }
-  
-  .header .navbar-brand {
-    display: flex;
-    align-items: center; /* アイコンとテキストを縦に中央揃え */
-    font-size: 1.5rem; /* フォントサイズ */
-    font-weight: bold; /* フォントウェイト */
-    color: #343a40; /* テキストカラー */
-    text-decoration: none; /* 下線削除 */
-  }
-  
-  .header .navbar-brand svg {
-    margin-right: 0.5rem; /* アイコンとテキストの間の余白 */
-  }
-  
-  .header .navbar-nav {
-    margin-left: auto; /* ナビゲーションを右側に寄せる */
-  }
-  
-  .header .navbar-nav a {
-    margin: 0 0.5rem; /* リンクの左右の余白 */
-    color: #007bff; /* リンクのカラー */
-    text-decoration: none; /* 下線削除 */
-    font-weight: normal; /* フォントウェイト */
-  }
-  
-  .header .navbar-nav a:hover {
-    color: #0056b3; /* ホバー時のリンクのカラー */
-  }
-  
+.navbar-brand {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #007bff; /* Primary color */
+  display: flex;
+  align-items: center; /* Center items vertically */
+  justify-content: center; /* Center items horizontally */
+  text-align: center; /* Ensure text is centered */
+}
+
+.navbar-brand svg {
+  margin-right: 10px; /* Space between icon and text */
+}

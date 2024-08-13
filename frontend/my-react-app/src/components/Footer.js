@@ -1,11 +1,11 @@
 import React from 'react';
-import './Footer.css'; // Ensure you have styles if needed
+import './Footer.css'; // Ensure your custom CSS is imported
 
 function Footer() {
   return (
-    <footer className="footer">
+    <footer className="footer text-center text-muted">
       <div className="container">
-        <span className="text-muted">&copy; 2024 To-Do App</span>
+        <span>&copy; 2024 To-Do App</span>
       </div>
     </footer>
   );

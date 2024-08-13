@@ -1,9 +1,28 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Header2.css';
 
 function Header2() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const header = document.querySelector('.header2');
+    const triggerHeight = header.offsetHeight;
+
+    const handleScroll = () => {
+      if (window.scrollY > triggerHeight) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   const handleSearch = (event) => {
     event.preventDefault();
@@ -25,16 +44,10 @@ function Header2() {
             placeholder="Search tasks..."
             name="query"
           />
-          <button
-            className="btn btn-outline-success me-2"
-            type="submit"
-          >
+          <button className="btn btn-outline-success me-2" type="submit">
             Search
           </button>
-          <button
-            className="btn btn-primary"
-            onClick={handleCreateTask}
-          >
+          <button className="btn btn-primary" onClick={handleCreateTask}>
             Create New Task
           </button>
         </form>

@@ -12,7 +12,7 @@ from flask_wtf.csrf import CSRFProtect, generate_csrf
 from flask_cors import CORS
 
 # app = Flask(__name__, static_folder='frontend/my-react-app/build', template_folder='frontend/my-react-app/build')
-app = Flask(__name__)
+app = Flask(__name__, static_folder='frontend/my-react-app/build', template_folder='frontend/my-react-app/build')
 CORS(app, supports_credentials=True)
 load_dotenv()
 
@@ -31,6 +31,7 @@ else:
     app.config.from_object(ProductionConfig)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(os.path.dirname(__file__), os.path.pardir, 'db.sqlite')}"
+SQLALCHEMY_TRACK_MODIFICATIONS = False
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB limit
 app.secret_key = 'supersecretkey'
@@ -45,10 +46,9 @@ def serve_static(filename):
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve_react_app(path):
-    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+    if path and os.path.exists(os.path.join(app.static_folder, path)):
         return send_from_directory(app.static_folder, path)
-    else:
-        return send_from_directory(app.static_folder, 'index.html')
+    return send_from_directory(app.static_folder, 'index.html')
 
 @app.route('/image/<int:id>')
 def get_image(id):
@@ -165,9 +165,9 @@ def get_tasks():
         logging.error(f"Error: {e}")
         return jsonify({'error': 'An error occurred'}), 500
 
-@app.errorhandler(404)
-def not_found_error(error):
-    return render_template('404.html'), 404
+# @app.errorhandler(404)
+# def not_found_error(error):
+#     return render_template('404.html'), 404
 
 @app.route('/add', methods=['POST'])
 @csrf.exempt
@@ -279,3 +279,4 @@ def delete_comment(id):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+

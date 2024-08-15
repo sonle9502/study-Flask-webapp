@@ -10,9 +10,20 @@ from io import BytesIO
 from forms import CommentForm
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 from flask_cors import CORS
+import openai
+import traceback
 
-# app = Flask(__name__, static_folder='frontend/my-react-app/build', template_folder='frontend/my-react-app/build')
 app = Flask(__name__, static_folder='frontend/my-react-app/build', template_folder='frontend/my-react-app/build')
+A = app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(os.path.dirname(__file__), 'data', 'db.sqlite')}"
+SQLALCHEMY_TRACK_MODIFICATIONS = False
+app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'uploads')
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB limit
+app.secret_key = 'supersecretkey'
+# OpenAI APIキーの設定
+openai.api_key = 'YOUR_OPENAI_API_KEY'
+
+db.init_app(app)
+migrate = Migrate(app, db)
 CORS(app, supports_credentials=True)
 load_dotenv()
 
@@ -30,14 +41,7 @@ elif env == 'testing':
 else:
     app.config.from_object(ProductionConfig)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(os.path.dirname(__file__), os.path.pardir, 'db.sqlite')}"
-SQLALCHEMY_TRACK_MODIFICATIONS = False
-app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'uploads')
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB limit
-app.secret_key = 'supersecretkey'
 
-db.init_app(app)
-migrate = Migrate(app, db)
 
 @app.route('/static/<path:filename>')
 def serve_static(filename):
@@ -55,6 +59,27 @@ def get_image(id):
     image = Image.query.get_or_404(id)
     return send_file(BytesIO(image.data), mimetype='image/jpeg')
 
+#generate-description by openAI
+@app.route('/api/generate-description', methods=['POST'])
+@csrf.exempt
+def generate_description():
+    try:
+        data = request.json
+        query = data.get('query')
+
+        # 新しいOpenAI APIの呼び出し
+        response = openai.Completion.create(
+            model="text-davinci-003",  # または他のモデル
+            prompt=query,
+            max_tokens=150
+        )
+
+        # レスポンスから説明文を取得
+        description = response['choices'][0]['text'].strip()
+        return jsonify({"description": description}), 200
+    except Exception as e:
+        app.logger.error("Error generating description: %s", str(e))
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/upload_images/<int:id>', methods=['POST'])
 @csrf.exempt
@@ -278,5 +303,8 @@ def delete_comment(id):
     return redirect(request.referrer or url_for('index'))
 
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()  # ここでテーブルを作成します
     app.run(host='0.0.0.0', port=5000)
+
 

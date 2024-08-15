@@ -1,11 +1,30 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios'; // axiosをインポート
 import './CreateTask.css'; // CSSファイルをインポート
+import { API_BASE_URL } from '../config';
 
 function CreateTask() {
   const [content, setContent] = useState('');
   const [description, setDescription] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [csrfToken, setCsrfToken] = useState('');
+
+  const generateDescription = async (query, todoId) => {
+    try {
+      const response = await axios.post('http://localhost:5000/api/generate-description', {
+        query,
+        todo_id: todoId
+      }, {
+        headers: {
+          'X-CSRF-Token': csrfToken // ヘッダー名をサーバーの設定に合わせる
+        }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error generating description:', error.response?.data || error.message);
+      throw error;
+    }
+  };
 
   useEffect(() => {
     fetch('/get-csrf-token', {
@@ -33,6 +52,20 @@ function CreateTask() {
     return date.toISOString(); // ISO 8601形式に変換
   };
 
+  const handleGenerateDescription = async () => {
+    if (content) {
+      try {
+        const generatedDescription = await generateDescription(content);
+        setDescription(generatedDescription); // 生成された説明を設定
+        console.log('Generated Description:', generatedDescription); // デバッグ用に表示
+      } catch (error) {
+        console.error('Error generating description:', error);
+      }
+    } else {
+      console.error('Content is empty111');
+    }
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
     const formattedDueDate = formatDateForBackend(dueDate);
@@ -43,7 +76,7 @@ function CreateTask() {
     };
     console.log("Sending task data:", taskData);  // デバッグ情報の追加
 
-    fetch('/add', {
+    fetch(`${API_BASE_URL}/add`, {
       method: 'POST',
       credentials: 'include', // クッキー情報を含めてリクエストを送信
       headers: {
@@ -92,6 +125,13 @@ function CreateTask() {
             onChange={(e) => setDescription(e.target.value)}
             required
           ></textarea>
+          {/* <button
+            type="button"
+            className="btn btn-secondary mt-2"
+            onClick={handleGenerateDescription}
+          >
+            Generate Description
+          </button> */}
         </div>
         <div className="form-group">
           <label htmlFor="dueDate">Due Date</label>

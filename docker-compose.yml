@@ -7,6 +7,10 @@ services:
       - "3000:3000"
     depends_on:
       - backend
+    volumes:
+      - ./frontend/my-react-app:/app
+    environment:
+      - CHOKIDAR_USEPOLLING=true
     networks:
       - mynetwork
 
@@ -17,6 +21,7 @@ services:
     ports:
       - "5000:5000"
     volumes:
+      - ./models/my_model.h5:/app/models/my_model.h5
       - sqlite_data:/app/data
     environment:
       - FLASK_ENV=development  

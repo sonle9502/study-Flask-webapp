@@ -3,7 +3,9 @@ from flask_migrate import Migrate
 from datetime import datetime, timedelta
 import os
 from config import DevelopmentConfig, TestingConfig, ProductionConfig
-from models import db, Todo, Image, Comment
+from models.flaskmodel import db, Todo, Image, Comment
+import changeImage
+from PIL import Image as IM
 import logging
 from dotenv import load_dotenv
 from io import BytesIO
@@ -11,11 +13,21 @@ from forms import CommentForm
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 from flask_cors import CORS
 import openai
-import traceback
+import tensorflow as tf
+import torch
+import librosa
+import cv2
+import numpy as np
+import base64
+import io
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__, static_folder='frontend/my-react-app/build', template_folder='frontend/my-react-app/build')
-A = app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(os.path.dirname(__file__), 'data', 'db.sqlite')}"
-SQLALCHEMY_TRACK_MODIFICATIONS = False
+# app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(os.path.dirname(__file__), 'data', 'db.sqlite')}"
+# MySQLデータベースのURIを設定
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:Future0308@#@localhost/dbname'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# SQLALCHEMY_TRACK_MODIFICATIONS = False
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB limit
 app.secret_key = 'supersecretkey'
@@ -41,7 +53,60 @@ elif env == 'testing':
 else:
     app.config.from_object(ProductionConfig)
 
+# モデルのロード
+try:
+    model = tf.keras.models.load_model('/app/modelsAI/editmodel.h5')
+    print("Model loaded successfully!")
+except Exception as e:
+    print(f"Error loading model: {e}")
 
+#画像認識
+@app.route('/predict-image', methods=['POST'])
+@csrf.exempt
+def predict_image():
+    try:
+        logging.info("Starting image processing...")
+        datafile = request.json.get('file')
+        index_value = request.json.get('index')
+        if not datafile:
+            raise ValueError("No data received")
+        
+        logging.info(f"Received image data length: {datafile}")
+        logging.info(f"Received image data length: {index_value}")
+
+        # デバッグ用ログ
+        logging.info("Calling changeImage()")
+        image_array = changeImage.changeImage(datafile)
+        changeImage.saveimage(image_array)
+        print(f"changeImage() returned shape: {np.array(image_array).shape}")
+
+        if index_value == 'number':
+            # 画像データをモデルに入力して予測を行う
+            predictions = model.predict(image_array)
+            # すべてのクラスの予測確率を含めて返す
+            prediction_probabilities = predictions[0].tolist()
+        elif index_value == 'kanji':
+            # 画像データをモデルに入力して予測を行う
+            # predictions = model.predict(image_array)
+            # すべてのクラスの予測確率を含めて返す
+            prediction_probabilities = [1, 2, 3]
+            logging.info(f"Received image data length: {prediction_probabilities}")
+
+        return jsonify({'predictions': prediction_probabilities}), 200
+
+    except Exception as e:
+        logging.error(f"Error processing image: {e}")
+        return jsonify({'error': 'Failed to process image'}), 500
+    
+    
+@app.route('/predict-audio', methods=['POST'])
+@csrf.exempt
+def predict_audio():
+    file = request.files['audio']
+    audio, sr = librosa.load(file, sr=None)
+    # モデルの推論コードをここに記述
+    prediction = "dummy_result"  # モデルの予測結果
+    return jsonify({'prediction': prediction})
 
 @app.route('/static/<path:filename>')
 def serve_static(filename):
@@ -110,6 +175,7 @@ def upload_images(id):
         return jsonify({"error": str(e)}), 500
     
 @app.route('/api/tasks/<int:id>', methods=['GET'])
+@csrf.exempt
 def get_task(id):
     todo = Todo.query.get_or_404(id)
     comments = Comment.query.filter_by(todo_id=id).order_by(Comment.created_at.desc()).all()
@@ -293,6 +359,14 @@ def detail(id):
         comment.created_at_local = (comment.created_at + offset).strftime('%Y-%m-%d %H:%M:%S')
     
     return render_template('detail.html', todo=todo, form=comment_form, comments=comments)
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    # エラーの詳細をログに出力
+    import traceback
+    app.logger.error(f"Exception: {str(e)}")
+    app.logger.error(traceback.format_exc())
+    return jsonify(error=str(e)), 500
 
 @app.route('/comment/delete/<int:id>', methods=['POST'])
 @csrf.exempt

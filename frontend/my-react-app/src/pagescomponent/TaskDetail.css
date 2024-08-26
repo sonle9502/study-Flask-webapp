@@ -78,5 +78,31 @@
     outline: none; /* Remove outline on focus */
 }
 
-  
+.notification-window {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 15px;
+    background-color: #333;
+    color: white;
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* 中央に配置 */
+}
+
+.close-button {
+    background-color: transparent;
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px; /* ボタンとメッセージの間にスペースを追加 */
+    align-self: center; /* ボタンを行の中央に配置 */
+}
+
+
   

@@ -1,18 +1,18 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
-db = SQLAlchemy()
+SQLAlchemy_db = SQLAlchemy()
 
-class Todo(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.String(200), nullable=False)
-    completed = db.Column(db.Boolean, default=False)
-    description = db.Column(db.Text, nullable=True)
-    due_date = db.Column(db.DateTime, nullable=True)  # 期限を追加
-    email_sent = db.Column(db.Boolean, default=False) #メールを送信されたかどうかを判断
-    images = db.relationship('Image', backref='todo', lazy=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    comments = db.relationship('Comment', backref='todo', lazy=True)
+class Todo(SQLAlchemy_db.Model):
+    id = SQLAlchemy_db.Column(SQLAlchemy_db.Integer, primary_key=True)
+    content = SQLAlchemy_db.Column(SQLAlchemy_db.String(200), nullable=False)
+    completed = SQLAlchemy_db.Column(SQLAlchemy_db.Boolean, default=False)
+    description = SQLAlchemy_db.Column(SQLAlchemy_db.Text, nullable=True)
+    due_date = SQLAlchemy_db.Column(SQLAlchemy_db.DateTime, nullable=True)  # 期限を追加
+    email_sent = SQLAlchemy_db.Column(SQLAlchemy_db.Boolean, default=False) #メールを送信されたかどうかを判断
+    images = SQLAlchemy_db.relationship('Image', backref='todo', lazy=True)
+    created_at = SQLAlchemy_db.Column(SQLAlchemy_db.DateTime, default=datetime.utcnow)
+    comments = SQLAlchemy_db.relationship('Comment', backref='todo', lazy=True)
 
     def to_dict(self):
         return {
@@ -35,20 +35,20 @@ class Todo(db.Model):
             return None
         return date.strftime('%Y年%m月%d日 %H時%M分')
     
-class Image(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    filename = db.Column(db.String(300), nullable=False)
-    todo_id = db.Column(db.Integer, db.ForeignKey('todo.id'), nullable=False)
-    data = db.Column(db.LargeBinary, nullable=False)  # 画像データを保存するカラム
+class Image(SQLAlchemy_db.Model):
+    id = SQLAlchemy_db.Column(SQLAlchemy_db.Integer, primary_key=True)
+    filename = SQLAlchemy_db.Column(SQLAlchemy_db.String(300), nullable=False)
+    todo_id = SQLAlchemy_db.Column(SQLAlchemy_db.Integer, SQLAlchemy_db.ForeignKey('todo.id'), nullable=False)
+    data = SQLAlchemy_db.Column(SQLAlchemy_db.LargeBinary, nullable=False)  # 画像データを保存するカラム
 
     def __repr__(self):
         return f'<Image {self.id}>'
     
-class Comment(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.String(500), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    todo_id = db.Column(db.Integer, db.ForeignKey('todo.id'), nullable=False)
+class Comment(SQLAlchemy_db.Model):
+    id = SQLAlchemy_db.Column(SQLAlchemy_db.Integer, primary_key=True)
+    content = SQLAlchemy_db.Column(SQLAlchemy_db.String(500), nullable=False)
+    created_at = SQLAlchemy_db.Column(SQLAlchemy_db.DateTime, default=datetime.utcnow)
+    todo_id = SQLAlchemy_db.Column(SQLAlchemy_db.Integer, SQLAlchemy_db.ForeignKey('todo.id'), nullable=False)
     
     def __repr__(self):
         return f'<Comment {self.id}>'

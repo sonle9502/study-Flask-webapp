@@ -14,7 +14,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/search" element={<HomePage />} />
           <Route path="/create-task" element={<CreateTask />} />
-          <Route path="/tasks/:taskId" element={<TaskDetail />} /> 
+          <Route path="/task/:taskId" element={<TaskDetail />} /> 
           <Route path="/handwritten" element={<Handwritten />} /> 
           <Route path="/kanjihandwriting" element={<Kanjiwriten />} /> 
           {/* 他のルートをここに追加 */}
